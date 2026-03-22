@@ -165,13 +165,13 @@ class ScanTokenActivity : AppCompatActivity() {
                     .load(token.imagePath)
                     .placeholder(R.drawable.scan)
                     .listener(object: RequestListener<Drawable> {
-                        override fun onLoadFailed(e: GlideException?, model: Any?, target: Target<Drawable>?, isFirstResource: Boolean): Boolean {
+                        override fun onLoadFailed(e: GlideException?, model: Any?, target: Target<Drawable>, isFirstResource: Boolean): Boolean {
                             e?.printStackTrace()
                             finish()
                             return false
                         }
 
-                        override fun onResourceReady(resource: Drawable?, model: Any?, target: Target<Drawable>?, dataSource: DataSource?, isFirstResource: Boolean): Boolean {
+                        override fun onResourceReady(resource: Drawable, model: Any, target: Target<Drawable>?, dataSource: DataSource, isFirstResource: Boolean): Boolean {
                             binding.progress.visibility = View.INVISIBLE
                             binding.image.alpha = 0.9f
                             binding.image.postDelayed({

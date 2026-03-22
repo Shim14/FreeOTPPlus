@@ -273,10 +273,9 @@ fun TokenImage.matchToken(issuer: String?, label: String?): Boolean {
             ?.contains(issuerToMatch.lowercase(Locale.getDefault())) ?: false
 
     return if (!issuerMatched && this.alsoMatchLabel) {
-        label?.toLowerCase(Locale.getDefault())
+        label?.lowercase(Locale.getDefault())
                 ?.contains(issuerToMatch.lowercase(Locale.getDefault())) ?: false
     } else {
         issuerMatched
     }
 }
-
