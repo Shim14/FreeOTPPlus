@@ -8,8 +8,6 @@ android {
 
     defaultConfig {
         minSdk = rootProject.extra["minSdkVersion"] as Int
-        targetSdk = rootProject.extra["targetSdkVersion"] as Int
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
     }
@@ -28,6 +26,12 @@ android {
         jvmTarget = "17"
     }
     namespace = "com.amulyakhare.textdrawable"
+    lint {
+        targetSdk = 35
+    }
+    testOptions {
+        targetSdk = 35
+    }
 }
 
 dependencies {

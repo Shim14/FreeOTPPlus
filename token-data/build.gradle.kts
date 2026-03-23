@@ -10,8 +10,6 @@ android {
 
     defaultConfig {
         minSdk = rootProject.extra["minSdkVersion"] as Int
-        targetSdk = rootProject.extra["targetSdkVersion"] as Int
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
     }
@@ -30,6 +28,12 @@ android {
         jvmTarget = "17"
     }
     namespace = "org.liberty.android.freeotp.token_data"
+    lint {
+        targetSdk = 35
+    }
+    testOptions {
+        targetSdk = 35
+    }
 }
 
 dependencies {

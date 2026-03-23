@@ -6,17 +6,17 @@ buildscript {
     }
 
     dependencies {
-        classpath("com.android.tools.build:gradle:8.13.2")
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.0.21")
+        classpath("com.android.tools.build:gradle:9.1.0")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.10")
         classpath(libs.hiltPlugin)
     }
 }
-
-allprojects {
-    repositories {
-        mavenCentral()
-        google()
-    }
+plugins {
+    id("com.android.application") version "9.1.0" apply false
+    id("com.android.library") version "9.1.0" apply false
+    kotlin("android") version "2.1.10" apply false
+    id("com.google.dagger.hilt.android") version "2.59.2" apply false
+    id("com.google.devtools.ksp") version "2.1.10-1.0.29" apply false
 }
 
 extra["compileSdkVersion"] = 35

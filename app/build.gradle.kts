@@ -1,8 +1,8 @@
 plugins {
     id("com.android.application")
     kotlin("android")
-    kotlin("kapt")
-    id("dagger.hilt.android.plugin")
+    id("com.google.devtools.ksp")
+    id("com.google.dagger.hilt.android")
 }
 
 android {
@@ -69,7 +69,7 @@ dependencies {
     implementation(libs.biometric)
 
     implementation(libs.hiltAndroid)
-    kapt(libs.hiltAndroidCompiler)
+    ksp(libs.hiltAndroidCompiler)
 
     androidTestImplementation(libs.bundles.androidxTest)
     androidTestUtil(libs.androidxTestOrchestrator)

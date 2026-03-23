@@ -1,12 +1,24 @@
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
 include(":token-images")
 include(":app")
 include(":text-drawable")
 include(":token-data")
 
 dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+    }
     versionCatalogs {
         create("libs") {
-            version("hilt", "2.54")
+            version("hilt", "2.59.2")
             version("appCompat", "1.7.0")
             version("activityKtx", "1.9.3")
             version("material", "1.12.0")
@@ -15,6 +27,7 @@ dependencyResolutionManagement {
             version("lifecycleKtx", "2.8.7")
             version("cameraX", "1.4.1")
             version("biometric", "1.1.0")
+            version("ksp", "2.1.10-1.0.29")
 
             version("zxing", "3.3.3") // Version 3.4.0 contains a crashing bug before api level 24
             version("gson", "2.11.0")
@@ -71,6 +84,9 @@ dependencyResolutionManagement {
             library("roomRuntime", "androidx.room", "room-runtime").versionRef("room")
             library("roomCompiler", "androidx.room", "room-compiler").versionRef("room")
             library("roomKtx", "androidx.room", "room-ktx").versionRef("room")
+
+            plugin("ksp", "com.google.devtools.ksp").versionRef("ksp")
+            plugin("hilt", "com.google.dagger.hilt.android").versionRef("hilt")
         }
     }
 }
