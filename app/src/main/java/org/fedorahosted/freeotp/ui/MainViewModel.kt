@@ -21,6 +21,7 @@ class MainViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val tokenSearchQuery = MutableStateFlow("")
+    private val categoryFilter = MutableStateFlow<String?>(null)
     private val authState = MutableStateFlow(
         if (settings.requireAuthentication) {
             AuthState.UNAUTHENTICATED
@@ -43,28 +44,43 @@ class MainViewModel @Inject constructor(
         tokenSearchQuery.value = query
     }
 
+    fun setCategoryFilter(category: String?) {
+        categoryFilter.value = category
+    }
+
     fun setAuthState(auth: AuthState) {
         authState.value = auth
     }
 
     fun getAuthState(): Flow<AuthState> = authState
 
+    fun getAllCategories(): Flow<List<String>> = otpTokenDatabase.otpTokenDao().getAllCategories()
+
     fun getTokenList(): Flow<List<OtpToken>> {
-        return combine(authState, tokenSearchQuery, otpTokenDatabase.otpTokenDao().getAll()) {auth, searchQuery, tokens ->
-            when {
-                auth != AuthState.AUTHENTICATED -> {
-                    emptyList()
+        return combine(authState, tokenSearchQuery, categoryFilter, otpTokenDatabase.otpTokenDao().getAll()) {auth, searchQuery, category, tokens ->
+            if (auth != AuthState.AUTHENTICATED) {
+                return@combine emptyList()
+            }
+
+            var filteredTokens = tokens
+            if (searchQuery.isNotEmpty()) {
+                filteredTokens = filteredTokens.filter { token ->
+                    token.label.contains(searchQuery, true)
+                            || token.issuer?.contains(searchQuery, true) ?: false
                 }
-                searchQuery.isEmpty() -> {
-                    tokens
-                }
-                else -> {
-                    tokens.filter { token ->
-                        token.label.contains(searchQuery, true)
-                                || token.issuer?.contains(searchQuery, true) ?: false
+            }
+
+            if (category != null) {
+                filteredTokens = filteredTokens.filter { token ->
+                    if (category == CATEGORY_UNCATEGORIZED) {
+                        token.category.isNullOrBlank()
+                    } else {
+                        token.category == category
                     }
                 }
             }
+
+            filteredTokens
         }
     }
 
@@ -87,6 +103,7 @@ class MainViewModel @Inject constructor(
 
     companion object {
         private const val TIMEOUT_DELAY_MS: Long = 120 * 1000L;
+        const val CATEGORY_UNCATEGORIZED = "uncategorized_special_value"
     }
 
 }

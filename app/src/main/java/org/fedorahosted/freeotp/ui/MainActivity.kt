@@ -54,7 +54,9 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView.AdapterDataObserver
@@ -62,6 +64,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.MigrationUtil
@@ -89,6 +92,7 @@ class MainActivity : AppCompatActivity() {
     private var searchQuery = ""
     private var menu: Menu? = null
     private var lastSessionEndTimestamp = 0L;
+    private var categories: List<String> = emptyList()
 
     private val tokenListObserver: AdapterDataObserver = object: AdapterDataObserver() {
         override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
@@ -122,23 +126,34 @@ class MainActivity : AppCompatActivity() {
         tokenListAdapter.registerAdapterDataObserver(tokenListObserver)
 
         lifecycleScope.launch {
-            viewModel.getTokenList().collect { tokens ->
-                tokenListAdapter.submitList(tokens)
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch {
+                    viewModel.getTokenList().collect { tokens ->
+                        tokenListAdapter.submitList(tokens)
 
-                if (tokens.isEmpty()) {
-                    binding.emptyView.visibility = View.VISIBLE
-                    binding.tokenList.visibility = View.GONE
-                } else {
-                    binding.emptyView.visibility = View.GONE
-                    binding.tokenList.visibility = View.VISIBLE
+                        if (tokens.isEmpty()) {
+                            binding.emptyView.visibility = View.VISIBLE
+                            binding.tokenList.visibility = View.GONE
+                        } else {
+                            binding.emptyView.visibility = View.GONE
+                            binding.tokenList.visibility = View.VISIBLE
+                        }
+                    }
                 }
-            }
-        }
 
-        lifecycleScope.launch {
-            viewModel.getAuthState().collect { authState ->
-                if (authState == MainViewModel.AuthState.UNAUTHENTICATED) {
-                    verifyAuthentication()
+                launch {
+                    viewModel.getAuthState().collect { authState ->
+                        if (authState == MainViewModel.AuthState.UNAUTHENTICATED) {
+                            verifyAuthentication()
+                        }
+                    }
+                }
+
+                launch {
+                    viewModel.getAllCategories().collect {
+                        categories = it
+                        invalidateOptionsMenu()
+                    }
                 }
             }
         }
@@ -198,6 +213,24 @@ class MainActivity : AppCompatActivity() {
         return true
     }
 
+    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
+        val filterItem = menu.findItem(R.id.action_filter)
+        val filterMenu = filterItem?.subMenu ?: return super.onPrepareOptionsMenu(menu)
+        filterMenu.clear()
+
+        filterMenu.add(Menu.NONE, R.id.action_filter_all, Menu.NONE, R.string.all_categories)
+        filterMenu.add(Menu.NONE, R.id.action_filter_uncategorized, Menu.NONE, R.string.uncategorized)
+
+        for (category in categories) {
+            filterMenu.add(Menu.NONE, Menu.NONE, Menu.NONE, category).setOnMenuItemClickListener {
+                viewModel.setCategoryFilter(category)
+                true
+            }
+        }
+
+        return super.onPrepareOptionsMenu(menu)
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.action_scan -> {
@@ -207,6 +240,16 @@ class MainActivity : AppCompatActivity() {
 
             R.id.action_add -> {
                 startActivity(Intent(this, AddActivity::class.java))
+                return true
+            }
+
+            R.id.action_filter_all -> {
+                viewModel.setCategoryFilter(null)
+                return true
+            }
+
+            R.id.action_filter_uncategorized -> {
+                viewModel.setCategoryFilter(MainViewModel.CATEGORY_UNCATEGORIZED)
                 return true
             }
 

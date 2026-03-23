@@ -26,6 +26,7 @@ class TokenLayout : MaterialCardView, View.OnClickListener, Runnable {
     private lateinit var mCode: TextView
     private lateinit var mIssuer: TextView
     private lateinit var mLabel: TextView
+    private lateinit var mCategory: TextView
     private lateinit var mMenu: ImageView
     private lateinit var mPopupMenu: PopupMenu
 
@@ -49,6 +50,7 @@ class TokenLayout : MaterialCardView, View.OnClickListener, Runnable {
         mCode = findViewById<View>(R.id.code) as TextView
         mIssuer = findViewById<View>(R.id.issuer) as TextView
         mLabel = findViewById<View>(R.id.label) as TextView
+        mCategory = findViewById<View>(R.id.category) as TextView
         mMenu = findViewById<View>(R.id.menu) as ImageView
 
         mPopupMenu = PopupMenu(context, mMenu)
@@ -90,6 +92,13 @@ class TokenLayout : MaterialCardView, View.OnClickListener, Runnable {
             mLabel.visibility = View.GONE
         } else {
             mLabel.visibility = View.VISIBLE
+        }
+
+        if (token.category.isNullOrBlank()) {
+            mCategory.visibility = View.GONE
+        } else {
+            mCategory.visibility = View.VISIBLE
+            mCategory.text = token.category
         }
     }
 

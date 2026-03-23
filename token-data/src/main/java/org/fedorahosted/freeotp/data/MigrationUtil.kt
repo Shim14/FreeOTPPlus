@@ -22,9 +22,7 @@ class MigrationUtil @Inject constructor(
     }
 
     suspend fun convertLegacySavedTokensToOtpTokens(savedTokens: SavedTokens): List<OtpToken> = withContext(Dispatchers.IO) {
-        val tokenMap = savedTokens.tokens.map { token ->
-            token.id to token
-        }.toMap()
+        val tokenMap = savedTokens.tokens.associateBy { it.id }
 
         val legacyTokens = savedTokens.tokenOrder.mapNotNull { tokenKey ->
             tokenMap[tokenKey]
@@ -47,16 +45,18 @@ class MigrationUtil @Inject constructor(
                 secret = legacyToken.secret,
                 digits = legacyToken.digits,
                 period = legacyToken.period,
-                encryptionType = EncryptionType.PLAIN_TEXT
+                encryptionType = EncryptionType.PLAIN_TEXT,
+                category = legacyToken.category
             )
         }
     };
 
     suspend fun convertOtpTokensToLegacyTokens(tokens: List<OtpToken>) = withContext(Dispatchers.IO) {
-        tokens.map {
-            OtpTokenFactory.toUri(it)
-        }.map { uri ->
-            Token(uri)
+        tokens.map { otpToken ->
+            val uri = OtpTokenFactory.toUri(otpToken)
+            Token(uri).apply {
+                category = otpToken.category
+            }
         }
     }
 }

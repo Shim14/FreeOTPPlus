@@ -26,6 +26,9 @@ interface OtpTokenDao {
     @Query("select ordinal from otp_tokens order by ordinal desc limit 1")
     fun getLastOrdinal(): Long?
 
+    @Query("select distinct category from otp_tokens where category is not null and category != ''")
+    fun getAllCategories(): Flow<List<String>>
+
     @Query("delete from otp_tokens where id = :id")
     suspend fun deleteById(id: Long)
 

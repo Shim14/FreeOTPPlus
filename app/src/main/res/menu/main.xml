@@ -29,6 +29,22 @@
         android:id="@+id/action_add"
         android:icon="@drawable/ic_action_new_account"
         android:title="@string/add_token" />
+
+    <item
+        android:id="@+id/action_filter"
+        android:icon="@drawable/filter_list_24px"
+        android:title="@string/category"
+        app:showAsAction="always">
+        <menu android:id="@+id/menu_filter_categories">
+            <item
+                android:id="@+id/action_filter_all"
+                android:title="@string/all_categories" />
+            <item
+                android:id="@+id/action_filter_uncategorized"
+                android:title="@string/uncategorized" />
+        </menu>
+    </item>
+
     <item
         android:icon="@drawable/ic_import"
         android:title="@string/import_text">

@@ -62,6 +62,7 @@ public class Token {
     private int digits;
     private long counter;
     private int period;
+    private String category;
 
     private Token(Uri uri, boolean internal) throws TokenUriInvalidException {
         if (!Objects.equals(uri.getScheme(), "otpauth"))
@@ -215,7 +216,7 @@ public class Token {
     }
 
     public Token(String uri) throws TokenUriInvalidException {
-        this(Uri.parse(uri));
+        this(uri, false);
     }
 
     public String getID() {
@@ -344,6 +345,14 @@ public class Token {
         return period;
     }
 
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -361,12 +370,13 @@ public class Token {
                 Objects.equals(imageAlt, token.imageAlt) &&
                 type == token.type &&
                 Objects.equals(algo, token.algo) &&
-                Arrays.equals(secret, token.secret);
+                Arrays.equals(secret, token.secret) &&
+                Objects.equals(category, token.category);
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(issuerInt, issuerExt, issuerAlt, label, labelAlt, image, imageAlt, type, algo, digits, counter, period);
+        int result = Objects.hash(issuerInt, issuerExt, issuerAlt, label, labelAlt, image, imageAlt, type, algo, digits, counter, period, category);
         result = 31 * result + Arrays.hashCode(secret);
         return result;
     }
