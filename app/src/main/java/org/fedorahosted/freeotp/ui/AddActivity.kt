@@ -25,6 +25,8 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
+import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
 import android.widget.CompoundButton
 import android.widget.EditText
 import android.widget.ImageButton
@@ -34,6 +36,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.fedorahosted.freeotp.R
 import org.fedorahosted.freeotp.data.OtpTokenDatabase
@@ -54,6 +57,7 @@ class AddActivity : AppCompatActivity(), View.OnClickListener, CompoundButton.On
     private lateinit var mImage: ImageButton
     private lateinit var mIssuer: EditText
     private lateinit var mLabel: EditText
+    private lateinit var mCategory: AutoCompleteTextView
     private lateinit var mSecret: EditText
     private lateinit var mInterval: EditText
     private lateinit var mCounter: EditText
@@ -71,6 +75,7 @@ class AddActivity : AppCompatActivity(), View.OnClickListener, CompoundButton.On
         mImage = findViewById(R.id.image)
         mIssuer = findViewById(R.id.issuer)
         mLabel = findViewById(R.id.label)
+        mCategory = findViewById(R.id.category)
         mSecret = findViewById(R.id.secret)
         mInterval = findViewById(R.id.interval)
         mCounter = findViewById(R.id.counter)
@@ -93,8 +98,30 @@ class AddActivity : AppCompatActivity(), View.OnClickListener, CompoundButton.On
         val tw = AddTextWatcher(this)
         mIssuer.addTextChangedListener(tw)
         mLabel.addTextChangedListener(tw)
+        mCategory.addTextChangedListener(tw)
         mSecret.addTextChangedListener(AddSecretTextWatcher(this))
         mInterval.addTextChangedListener(tw)
+
+        lifecycleScope.launch {
+            val categories = otpTokenDatabase.otpTokenDao().getAllCategories().first().toMutableList()
+            categories.add(0, getString(R.string.uncategorized))
+            val adapter = ArrayAdapter(this@AddActivity, android.R.layout.simple_dropdown_item_1line, categories)
+            mCategory.setAdapter(adapter)
+            mCategory.threshold = 0
+            mCategory.setOnClickListener {
+                mCategory.showDropDown()
+            }
+            mCategory.setOnFocusChangeListener { _, hasFocus ->
+                if (hasFocus) {
+                    mCategory.showDropDown()
+                }
+            }
+            mCategory.setOnItemClickListener { _, _, position, _ ->
+                if (position == 0) {
+                    mCategory.setText("")
+                }
+            }
+        }
     }
 
     override fun onClick(view: View) {
@@ -141,7 +168,10 @@ class AddActivity : AppCompatActivity(), View.OnClickListener, CompoundButton.On
 
                 // Add the token
                 lifecycleScope.launch {
-                    otpTokenDatabase.otpTokenDao().insert(OtpTokenFactory.createFromUri(Uri.parse(uri)))
+                    val token = OtpTokenFactory.createFromUri(Uri.parse(uri)).copy(
+                        category = mCategory.text.toString()
+                    )
+                    otpTokenDatabase.otpTokenDao().insert(token)
                     setResult(Activity.RESULT_OK)
                     finish()
                 }

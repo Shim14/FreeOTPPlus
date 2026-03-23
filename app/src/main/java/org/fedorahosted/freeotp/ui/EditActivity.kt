@@ -152,9 +152,24 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
             val intervalTextView = findViewById<TextView>(R.id.interval)
             intervalTextView.text = token.period.toString()
 
-            val categories = otpTokenDatabase.otpTokenDao().getAllCategories().first()
+            val categories = otpTokenDatabase.otpTokenDao().getAllCategories().first().toMutableList()
+            categories.add(0, getString(R.string.uncategorized))
             val adapter = ArrayAdapter(this@EditActivity, android.R.layout.simple_dropdown_item_1line, categories)
             mCategory.setAdapter(adapter)
+            mCategory.threshold = 0
+            mCategory.setOnClickListener {
+                mCategory.showDropDown()
+            }
+            mCategory.setOnFocusChangeListener { _, hasFocus ->
+                if (hasFocus) {
+                    mCategory.showDropDown()
+                }
+            }
+            mCategory.setOnItemClickListener { _, _, position, _ ->
+                if (position == 0) {
+                    mCategory.setText("")
+                }
+            }
         }
     }
 
