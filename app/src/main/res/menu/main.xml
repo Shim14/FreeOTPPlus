@@ -46,7 +46,7 @@
     </item>
 
     <item
-        android:icon="@drawable/ic_import"
+        android:icon="@drawable/download_24px"
         android:title="@string/import_text">
         <menu>
             <item
@@ -58,7 +58,7 @@
         </menu>
     </item>
     <item
-        android:icon="@drawable/ic_export"
+        android:icon="@drawable/upload_24px"
         android:title="@string/export_text">
         <menu>
             <item
@@ -83,11 +83,11 @@
         android:checkable="true"/>
     <item
         android:id="@+id/action_about"
-        android:icon="@android:drawable/ic_menu_info_details"
+        android:icon="@drawable/info_24px"
         android:title="@string/about_freeotp" />
     <item
         android:id="@+id/quit_and_lock"
-        android:icon="@android:drawable/ic_lock_power_off"
+        android:icon="@drawable/power_settings_new_24px"
         android:title="@string/quit_and_lock"
         app:showAsAction="ifRoom" />
 </menu>
