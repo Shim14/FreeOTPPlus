@@ -306,14 +306,12 @@ class MainActivity : AppCompatActivity() {
             }
 
             R.id.require_authentication -> {
-                // Make sure we also verify authentication before turning on the settings
+                // Make sure we also verify authentication before turning on or off the settings
 
                 if (!settings.requireAuthentication) {
-                    viewModel.setAuthState(MainViewModel.AuthState.UNAUTHENTICATED)
+                    verifyAuthentication(isEnabling = true)
                 } else {
-                    settings.requireAuthentication = false
-                    viewModel.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
-                    refreshOptionMenu()
+                    verifyAuthentication(isDisabling = true)
                 }
 
                 return true
@@ -466,7 +464,7 @@ class MainActivity : AppCompatActivity() {
         this.menu?.findItem(R.id.require_authentication)?.isChecked = settings.requireAuthentication
     }
 
-    private fun verifyAuthentication() {
+    private fun verifyAuthentication(isEnabling: Boolean = false, isDisabling: Boolean = false) {
         val executor = ContextCompat.getMainExecutor(this)
         val biometricPrompt = BiometricPrompt(this, executor,
                 object : BiometricPrompt.AuthenticationCallback() {
@@ -480,7 +478,7 @@ class MainActivity : AppCompatActivity() {
                                 .show()
                         }
 
-                        if (errorCode != BiometricPrompt.ERROR_NO_DEVICE_CREDENTIAL) {
+                        if (!isEnabling && !isDisabling && errorCode != BiometricPrompt.ERROR_NO_DEVICE_CREDENTIAL) {
                             finish()
                         }
                     }
@@ -490,8 +488,11 @@ class MainActivity : AppCompatActivity() {
                         super.onAuthenticationSucceeded(result)
                         viewModel.setAuthState(MainViewModel.AuthState.AUTHENTICATED)
 
-                        if (!settings.requireAuthentication) {
+                        if (isEnabling) {
                             settings.requireAuthentication = true
+                            refreshOptionMenu()
+                        } else if (isDisabling) {
+                            settings.requireAuthentication = false
                             refreshOptionMenu()
                         }
                     }
