@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.view.Surface
 import android.view.View
 import android.widget.Toast
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.AspectRatio
 import androidx.camera.core.CameraSelector
@@ -17,6 +18,8 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
@@ -55,9 +58,23 @@ class ScanTokenActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
 
         binding = ActivityScanTokenBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.window) { view, windowInsets ->
+            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            val marginParam = view.layoutParams as android.widget.FrameLayout.LayoutParams
+            marginParam.setMargins(
+                (64 * resources.displayMetrics.density).toInt() + insets.left,
+                (64 * resources.displayMetrics.density).toInt() + insets.top,
+                (64 * resources.displayMetrics.density).toInt() + insets.right,
+                (64 * resources.displayMetrics.density).toInt() + insets.bottom
+            )
+            view.layoutParams = marginParam
+            windowInsets
+        }
 
         if (allPermissionsGranted()) {
             binding.viewFinder.post { startCamera() }
@@ -81,7 +98,6 @@ class ScanTokenActivity : AppCompatActivity() {
             preview.setSurfaceProvider(binding.viewFinder.surfaceProvider)
 
             val imageAnalysis = ImageAnalysis.Builder().apply {
-                setBackgroundExecutor(executorService)
                 setTargetAspectRatio(AspectRatio.RATIO_16_9)
                 setTargetRotation(Surface.ROTATION_0)
             }.build()
@@ -94,95 +110,89 @@ class ScanTokenActivity : AppCompatActivity() {
 
             cameraProvider.unbindAll()
             cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageAnalysis)
-        }, ContextCompat.getMainExecutor(this));
-    }
-
-    /**
-     * Process result from permission request dialog box, has the request
-     * been granted? If yes, start Camera. Otherwise display a toast
-     */
-    override fun onRequestPermissionsResult(
-        requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == REQUEST_CODE_PERMISSIONS) {
-            if (allPermissionsGranted()) {
-                binding.viewFinder.post {
-                    startCamera()
-                }
-            } else {
-                Toast.makeText(this, R.string.camera_permission_denied_text, Toast.LENGTH_LONG).show()
-                finish()
-            }
-        }
-    }
-
-    /**
-     * Check if all permission specified in the manifest have been granted
-     */
-    private fun allPermissionsGranted(): Boolean {
-        for (permission in REQUIRED_PERMISSIONS) {
-            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
-                return false
-            }
-        }
-        return true
+        }, ContextCompat.getMainExecutor(this))
     }
 
     private fun analyzeImage(imageProxy: ImageProxy) {
         if (foundToken) {
+            imageProxy.close()
             return
         }
 
-        val tokenString = imageProxy.use { image ->
-            tokenQRCodeDecoder.parseQRCode(image) ?: return
+        val tokenString = tokenQRCodeDecoder.parseQRCode(imageProxy)
+
+        if (tokenString != null) {
+            foundToken = true
+
+            lifecycleScope.launch {
+                try {
+                    val token = OtpTokenFactory.createFromUri(Uri.parse(tokenString))
+                    if (token.imagePath != null) {
+                        Glide.with(this@ScanTokenActivity)
+                                .load(token.imagePath)
+                                .placeholder(R.drawable.scan)
+                                .listener(object : RequestListener<Drawable> {
+                                    override fun onLoadFailed(e: GlideException?,
+                                                              model: Any?,
+                                                              target: Target<Drawable>,
+                                                              isFirstResource: Boolean): Boolean {
+                                        e?.printStackTrace()
+                                        return false
+                                    }
+
+                                    override fun onResourceReady(resource: Drawable,
+                                                                 model: Any,
+                                                                 target: Target<Drawable>?,
+                                                                 dataSource: DataSource,
+                                                                 isFirstResource: Boolean): Boolean {
+                                        binding.progress.visibility = View.INVISIBLE
+                                        binding.image.alpha = 0.9f
+                                        binding.image.postDelayed({
+                                            lifecycleScope.launch {
+                                                otpTokenDatabase.otpTokenDao().insert(token)
+                                                setResult(RESULT_OK)
+                                                finish()
+                                            }
+                                        }, 2000)
+                                        return false
+                                    }
+
+                                })
+                                .into(binding.image)
+                    } else {
+                        otpTokenDatabase.otpTokenDao().insert(token)
+                        setResult(RESULT_OK)
+                        finish()
+                    }
+
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    Toast.makeText(this@ScanTokenActivity, R.string.invalid_token_uri_received, Toast.LENGTH_SHORT).show()
+                    foundToken = false
+                }
+            }
         }
+        imageProxy.close()
+    }
 
-        foundToken = true
 
-
-
-        lifecycleScope.launch {
-            val token = try {
-                val t = OtpTokenFactory.createFromUri((Uri.parse(tokenString)))
-                otpTokenDatabase.otpTokenDao().insert(t)
-                t
-            } catch (e: Throwable) {
-                Toast.makeText(this@ScanTokenActivity, R.string.invalid_token_uri_received, Toast.LENGTH_SHORT).show()
-
+    override fun onRequestPermissionsResult(
+            requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQUEST_CODE_PERMISSIONS) {
+            if (allPermissionsGranted()) {
+                binding.viewFinder.post { startCamera() }
+            } else {
+                Toast.makeText(this,
+                        R.string.error_camera_open,
+                        Toast.LENGTH_SHORT).show()
                 finish()
-                return@launch
             }
-
-            Toast.makeText(this@ScanTokenActivity, R.string.add_token_success, Toast.LENGTH_SHORT).show()
-
-            setResult(RESULT_OK)
-            if (token.imagePath == null) {
-                finish()
-                return@launch
-            }
-
-            Glide.with(this@ScanTokenActivity)
-                    .load(token.imagePath)
-                    .placeholder(R.drawable.scan)
-                    .listener(object: RequestListener<Drawable> {
-                        override fun onLoadFailed(e: GlideException?, model: Any?, target: Target<Drawable>, isFirstResource: Boolean): Boolean {
-                            e?.printStackTrace()
-                            finish()
-                            return false
-                        }
-
-                        override fun onResourceReady(resource: Drawable, model: Any, target: Target<Drawable>?, dataSource: DataSource, isFirstResource: Boolean): Boolean {
-                            binding.progress.visibility = View.INVISIBLE
-                            binding.image.alpha = 0.9f
-                            binding.image.postDelayed({
-                                finish()
-                            }, 2000)
-                            return false 
-                        }
-
-                    })
-                    .into(binding.image)
         }
     }
 
+    private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
+        ContextCompat.checkSelfPermission(
+                baseContext, it) == PackageManager.PERMISSION_GRANTED
+    }
 }

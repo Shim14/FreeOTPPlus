@@ -33,7 +33,10 @@ import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import dagger.hilt.android.AndroidEntryPoint
@@ -91,9 +94,22 @@ class EditActivity : AppCompatActivity(), TextWatcher, View.OnClickListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
 
         binding = EditBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        val buttonLayout = binding.root.findViewById<View>(R.id.button_layout)
+        ViewCompat.setOnApplyWindowInsetsListener(buttonLayout) { view, windowInsets ->
+            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            view.setPadding(
+                view.paddingLeft,
+                view.paddingTop,
+                view.paddingRight,
+                insets.bottom
+            )
+            windowInsets
+        }
 
         lifecycleScope.launch {
             tokenId = intent.getLongExtra(EXTRA_TOKEN_ID, 0)

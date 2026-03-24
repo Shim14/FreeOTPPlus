@@ -3,7 +3,10 @@ package org.fedorahosted.freeotp.ui
 import android.os.Bundle
 import android.view.View
 import android.widget.TextView
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
@@ -21,9 +24,22 @@ class DeleteActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
 
         binding = DeleteBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        val buttonLayout = binding.root.findViewById<View>(R.id.button_layout)
+        ViewCompat.setOnApplyWindowInsetsListener(buttonLayout) { view, windowInsets ->
+            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            view.setPadding(
+                view.paddingLeft,
+                view.paddingTop,
+                view.paddingRight,
+                insets.bottom
+            )
+            windowInsets
+        }
 
         lifecycleScope.launch {
             val tokenId = intent.getLongExtra(EXTRA_TOKEN_ID, 0L)

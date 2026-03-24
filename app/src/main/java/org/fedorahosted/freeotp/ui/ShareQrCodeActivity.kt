@@ -23,7 +23,10 @@ package org.fedorahosted.freeotp.ui
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.os.Bundle
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.qrcode.QRCodeWriter
@@ -44,9 +47,21 @@ class ShareQrCodeActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
 
         val binding = ShareQrcodeBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { view, windowInsets ->
+            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            view.setPadding(
+                view.paddingLeft + insets.left,
+                view.paddingTop + insets.top,
+                view.paddingRight + insets.right,
+                view.paddingBottom + insets.bottom
+            )
+            windowInsets
+        }
 
         lifecycleScope.launch {
             val tokenId = intent.getLongExtra(EXTRA_TOKEN_ID, 0)

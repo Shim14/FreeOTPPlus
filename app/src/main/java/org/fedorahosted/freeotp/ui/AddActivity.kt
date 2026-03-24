@@ -32,7 +32,10 @@ import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.RadioButton
 import android.widget.Spinner
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import dagger.hilt.android.AndroidEntryPoint
@@ -68,8 +71,21 @@ class AddActivity : AppCompatActivity(), View.OnClickListener, CompoundButton.On
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
 
         setContentView(R.layout.add)
+
+        val buttonLayout = findViewById<View>(R.id.button_layout)
+        ViewCompat.setOnApplyWindowInsetsListener(buttonLayout) { view, windowInsets ->
+            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            view.setPadding(
+                view.paddingLeft,
+                view.paddingTop,
+                view.paddingRight,
+                insets.bottom
+            )
+            windowInsets
+        }
 
         setSupportActionBar(findViewById(R.id.toolbar))
         mImage = findViewById(R.id.image)
