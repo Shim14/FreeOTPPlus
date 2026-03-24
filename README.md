@@ -5,12 +5,13 @@ FreeOTP Plus forked the same functionality of [FreeOTP](https://github.com/freeo
 * Import settings from Google Drive or other document providers
 * Lots of stability improvement
 * Support Android 6.0 permissions.
-* Enhanced UI with material design with dark theme support
+* Enhanced UI with material design v3 with dark theme support
 * Search bar to search token
 * Provide more token details for better interoperatibility with other apps
 * Utilize modern camera hardware to scan QR code faster
 * Option to require Biometric / PIN authentication to launch the app
 * Heuristic based offline icon for tokens of 250+ websites
+* Categorize tokens and filter by category
 * More settings to customize the app functionality
 
 Most part of the code is re-written with modern Jetpack libraries and Kotlin language.

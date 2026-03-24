@@ -1,0 +1,5 @@
+RELEASE-3.2
+* Add function to edit and filter categories
+* Enhance security by requiring authentication at various points
+* Updated to Material Design V3
+* Upgrade AGP version
