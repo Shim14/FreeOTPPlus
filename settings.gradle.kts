@@ -19,25 +19,26 @@ dependencyResolutionManagement {
     versionCatalogs {
         create("libs") {
             version("hilt", "2.59.2")
-            version("appCompat", "1.7.0")
-            version("activityKtx", "1.9.3")
-            version("material", "1.12.0")
-            version("coreKtx", "1.15.0")
-            version("kotlinxCoroutines", "1.10.1")
-            version("lifecycleKtx", "2.8.7")
-            version("cameraX", "1.4.1")
+            version("appCompat", "1.7.1")
+            version("activityKtx", "1.13.0")
+            version("material", "1.13.0")
+            version("coreKtx", "1.18.0")
+            version("kotlinxCoroutines", "1.10.2")
+            version("lifecycleKtx", "2.10.0")
+            version("cameraX", "1.6.0")
             version("biometric", "1.1.0")
-            version("ksp", "2.1.10-1.0.29")
+            version("ksp", "2.3.7")
 
-            version("zxing", "3.3.3") // Version 3.4.0 contains a crashing bug before api level 24
-            version("gson", "2.11.0")
-            version("glide", "4.16.0")
+            version("zxing", "3.5.4") // Version 3.4.0 contains a crashing bug before api level 24
+            version("gson", "2.14.0")
+            version("glide", "5.0.7")
             version("room", "2.8.4")
-            version("androidxTestCore", "1.6.1")
-            version("androidxTestOrchestrator", "1.5.1")
-            version("androidxJunit", "1.2.1")
-            version("androidxTruth", "1.6.0")
-            version("espresso", "3.6.1")
+            version("androidxTestCore", "1.7.0")
+            version("androidxTestOrchestrator", "1.6.1")
+            version("androidxJunit", "1.3.0")
+            version("androidxTruth", "1.7.0")
+            version("espresso", "3.7.0")
+            version("guava", "33.4.0-android")
 
             library("appCompat", "androidx.appcompat","appcompat").versionRef("appCompat")
             library("material", "com.google.android.material", "material").versionRef("material")
@@ -84,6 +85,8 @@ dependencyResolutionManagement {
             library("roomRuntime", "androidx.room", "room-runtime").versionRef("room")
             library("roomCompiler", "androidx.room", "room-compiler").versionRef("room")
             library("roomKtx", "androidx.room", "room-ktx").versionRef("room")
+
+            library("guava", "com.google.guava", "guava").versionRef("guava")
 
             plugin("ksp", "com.google.devtools.ksp").versionRef("ksp")
             plugin("hilt", "com.google.dagger.hilt.android").versionRef("hilt")

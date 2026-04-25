@@ -19,8 +19,8 @@ plugins {
     id("com.google.devtools.ksp") version "2.3.2" apply false
 }
 
-extra["compileSdkVersion"] = 35
-extra["targetSdkVersion"] = 35
+extra["compileSdkVersion"] = 36
+extra["targetSdkVersion"] = 36
 extra["minSdkVersion"] = 23
 extra["versionCode"] = 24
 extra["versionName"] = "3.2"

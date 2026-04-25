@@ -67,6 +67,7 @@ dependencies {
 
     implementation(libs.bundles.cameraX)
     implementation(libs.biometric)
+    implementation(libs.guava)
 
     implementation(libs.hiltAndroid)
     ksp(libs.hiltAndroidCompiler)
