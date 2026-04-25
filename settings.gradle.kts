@@ -32,7 +32,7 @@ dependencyResolutionManagement {
             version("zxing", "3.3.3") // Version 3.4.0 contains a crashing bug before api level 24
             version("gson", "2.11.0")
             version("glide", "4.16.0")
-            version("room", "2.7.0-alpha13")
+            version("room", "2.8.4")
             version("androidxTestCore", "1.6.1")
             version("androidxTestOrchestrator", "1.5.1")
             version("androidxJunit", "1.2.1")

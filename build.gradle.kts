@@ -21,6 +21,6 @@ plugins {
 
 extra["compileSdkVersion"] = 35
 extra["targetSdkVersion"] = 35
-extra["minSdkVersion"] = 21
+extra["minSdkVersion"] = 23
 extra["versionCode"] = 24
 extra["versionName"] = "3.2"
