@@ -7,10 +7,10 @@ import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.closeSoftKeyboard
 import androidx.test.espresso.action.ViewActions.replaceText
 import androidx.test.espresso.action.ViewActions.scrollTo
-import androidx.test.espresso.action.ViewActions.typeText
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition
 import androidx.test.espresso.matcher.ViewMatchers.hasDescendant
+import androidx.test.espresso.matcher.ViewMatchers.isEnabled
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.rules.activityScenarioRule
@@ -47,12 +47,13 @@ class MainActivityTest {
         onView(withText(R.string.add_token))
             .perform(click())
         onView(withId(R.id.issuer))
-            .perform(typeText("issuer1"), closeSoftKeyboard())
+            .perform(replaceText("issuer1"), closeSoftKeyboard())
         onView(withId(R.id.label))
-            .perform(typeText("account1"), closeSoftKeyboard())
+            .perform(replaceText("account1"), closeSoftKeyboard())
         onView(withId(R.id.secret))
-            .perform(typeText("abcd5432"))
+            .perform(replaceText("abcd5432"), closeSoftKeyboard())
         onView(withId(R.id.add))
+            .check(matches(isEnabled()))
             .perform(click())
         onView(withId(R.id.token_list))
             .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, scrollTo()))
